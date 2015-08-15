@@ -53,7 +53,7 @@ namespace Spinpreach.SpinTowerBrowser
 
         private void SettingButton_Click(object sender, EventArgs e)
         {
-            LoginForm frm = new LoginForm();
+            var frm = new LoginForm();
             if (frm.ShowDialog() == DialogResult.OK)
             {
                 LoginInfo.Save(frm.LoginData);
