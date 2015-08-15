@@ -1,0 +1,9 @@
+﻿★ログイン時
+apiname = login
+apiname = imagelist
+apiname = soundlist
+apiname = constant
+
+★ゲームスタート
+apiname = homeinit
+apiname = batheinit

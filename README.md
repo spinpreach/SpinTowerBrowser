@@ -1,2 +1,28 @@
-# SpinTowerBrowser
-DMM.com ãŒé…ä¿¡ã—ã¦ã„ã‚‹ãƒ–ãƒ©ã‚¦ã‚¶ã‚²ãƒ¼ãƒ ã€Œä¿ºã‚¿ãƒ¯ãƒ¼ã€€ï½ Over Legend Endless Tower ï½ã€ã®å°‚ç”¨ãƒ–ãƒ©ã‚¦ã‚¶ã§ã™ã€‚
+‰ñ“]Œš‹@ (SpinTowerBrowser)
+======================
+
+yŠT@@—vz
+----------------
+DMM.com ‚ª”zM‚µ‚Ä‚¢‚éƒuƒ‰ƒEƒUƒQ[ƒ€u‰´ƒ^ƒ[@` Over Legend Endless Tower `v‚Ìê—pƒuƒ‰ƒEƒU‚Å‚·B
+
+y“®ìŠÂ‹«z
+----------------
++ Windows 7 (32bit, 64bit)
++ Windows 8 (32bit, 64bit)
++ Windows 8.1 (32bit, 64bit)
++ Windows 10 (32bit, 64bit)
++ .NET Framework 4.5 ˆÈã
++ Internet Explorer 9
+
+yŠJ”­ŠÂ‹«z
+----------------
++ Visual Studio 2015 (C#)
+
+yƒ‰ƒCƒZƒ“ƒXz
+----------------
+ƒI[ƒvƒ“ƒ\[ƒX / ƒtƒŠ[ƒ\ƒtƒgƒEƒFƒA  
+This software is released under the MIT License, see LICENSE.txt.
+
+yƒ‰ƒCƒuƒ‰ƒŠz
+----------------
+see AUTHORS.txt.
