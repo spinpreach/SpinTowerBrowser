@@ -36,7 +36,7 @@ namespace Spinpreach.SpinTowerBrowser.CustomControls
             var column2 = new DataGridViewTextBoxColumn()
             {
                 Frozen = true,
-                HeaderText = "艦娘",
+                HeaderText = "建姫",
                 Name = "name",
                 DataPropertyName = "name",
                 ReadOnly = true,
