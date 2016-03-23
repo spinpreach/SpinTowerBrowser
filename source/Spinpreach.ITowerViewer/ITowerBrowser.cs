@@ -25,25 +25,19 @@ namespace Spinpreach.ITowerViewer
         {
             ViewerRegistry.SetRenderingMode(ViewerRegistry.ENUM_RENDERING_MODE.IE9);
             this.DocumentCompleted += new WebBrowserDocumentCompletedEventHandler(this.ITowerBrowser_DocumentCompleted);
-            this.Resize += new EventHandler(this.ITowerBrowser_Resize);
         }
-
-        #region Event
 
         private void ITowerBrowser_DocumentCompleted(object sender, WebBrowserDocumentCompletedEventArgs e)
         {
             try
             {
-
-                System.Diagnostics.Debug.WriteLine(e.Url.ToString());
                 var Browser = (WebBrowser)sender;
-
                 if (e.Url.PathAndQuery.StartsWith("/my/-/login/=/path="))
                 {
-                    HtmlElementCollection inputs = Browser.Document.GetElementsByTagName("input");
-                    HtmlElement LoginId = inputs.Cast<HtmlElement>().Single(el => el.Id == "login_id");
-                    HtmlElement Password = inputs.Cast<HtmlElement>().Single(el => el.Id == "password");
-                    HtmlElement Submit = inputs.Cast<HtmlElement>().Single(x => x.OuterHtml.Contains("submit"));
+                    var inputs = Browser.Document.GetElementsByTagName("input");
+                    var LoginId = inputs.Cast<HtmlElement>().Single(el => el.Id == "login_id");
+                    var Password = inputs.Cast<HtmlElement>().Single(el => el.Id == "password");
+                    var Submit = inputs.Cast<HtmlElement>().Single(x => x.OuterHtml.Contains("submit"));
 
                     LoginId.SetAttribute("value", this.login.UserID);
                     Password.SetAttribute("value", this.login.PassWord);
@@ -63,159 +57,166 @@ namespace Spinpreach.ITowerViewer
 
         private async void CompletedAsync()
         {
-            await Task.Run(() => { System.Threading.Thread.Sleep(500); }); // ← 要調整（画面読み込み待機）
+            await Task.Run(() => { System.Threading.Thread.Sleep(1500); }); // ← 要調整（画面読み込み待機）
             this.documentChanger();
-            this.frameReSize(this.Width, this.Height);
+            this.frameReSize();
+            this.Resize += (sender, e) => this.frameReSize();
             this.audio = new Audio();
-            this.audio.MuteChangedEvent += (isMute) => { this.Invoke(new Action<bool>(this.Audio_MuteChanged), isMute); };
+            this.audio.MuteChangedEvent += (mute) => this.Invoke(new Action<bool>(this.Audio_MuteChanged), mute);
             this.LoginCompletedEvent?.Invoke(); // ← 読み込み完了通知は最後！！
         }
 
-        private void Audio_MuteChanged(bool isMute)
+        private void Audio_MuteChanged(bool mute)
         {
             if (this.IsMute() == null) return;
-            this.MuteChangedEvent?.Invoke(isMute);
+            this.MuteChangedEvent?.Invoke(mute);
         }
-
-        private void ITowerBrowser_Resize(object sender, EventArgs e)
-        {
-            this.frameReSize(this.Width, this.Height);
-        }
-
-        #endregion
 
         #region method
 
-        #region getElementById
-
-        private T getElementById<T>(string id)
+        private void SetDefaultElementStyle(mshtml.HTMLParaElement element)
         {
-            try
-            {
-                var guidService = typeof(SHDocVw.IWebBrowserApp).GUID;
-                var riid = typeof(SHDocVw.IWebBrowser2).GUID;
-                var document = (mshtml.HTMLDocument)this.Document.DomDocument;
-                if (document == null) { return default(T); }
-                for (int i = 0; i < document.frames.length; i++)
-                {
-                    var provider = document.frames.item(i) as IServiceProvider; if (provider == null) continue;
-                    object ppvObject;
-                    provider.QueryService(guidService, riid, out ppvObject);
-                    var webBrowser = ppvObject as SHDocVw.IWebBrowser2; if (webBrowser == null) continue;
-                    var iframeDocument = webBrowser.Document as mshtml.HTMLDocument; if (iframeDocument == null) continue;
-                    var element = iframeDocument.getElementById(id); if (element == null) continue;
-                    return (T)element;
-                }
-                return default(T);
-            }
-            catch (Exception)
-            {
-                return default(T);
-            }
+            element.style.margin = "0px";
+            element.style.padding = "0px";
+            element.style.backgroundColor = "black";
         }
-
-        #endregion
-
-        #region StyleSheet
 
         private void documentChanger()
         {
             try
             {
-                var document = (mshtml.HTMLDocument)this.Document.DomDocument;
-                if (document == null) { return; }
+                var document1 = this.Document.DomDocument as mshtml.HTMLDocument;
+                if (document1 == null) return;
 
-                //******************************************************************
-                var div1 = document.getElementById("dmm-ntgnavi-renew"); if (div1 == null) { return; }
-                var div2 = document.getElementById("twitter-widget-0"); if (div2 == null) { return; }
-                var div3 = document.getElementById("foot"); if (div3 == null) { return; }
-                var div4 = document.getElementById("ntg-recommend"); if (div4 == null) { return; }
-                var div5 = document.getElementById("game_frame"); if (div5 == null) { return; }
+                var body1 = document1.getElementsByTagName("body").item(0) as mshtml.HTMLBody;
+                body1.style.margin = "0px";
+                body1.style.padding = "0px";
+                body1.style.overflow = "hidden";
+                body1.style.backgroundColor = "black";
 
-                //インラインフレーム内のDIV
-                var div6 = this.getElementById<mshtml.HTMLDivElement>("infoWrap"); if (div6 == null) return;
-                var div7 = this.getElementById<mshtml.HTMLDivElement>("tabWrap"); if (div7 == null) return;
-                //******************************************************************
+                var div1 = document1.getElementsByTagName("div").Cast<mshtml.HTMLParaElement>();
+                foreach (mshtml.HTMLParaElement item in div1)
+                {
+                    this.SetDefaultElementStyle(item);
+                    if (item.id == "w") continue;
+                    if (item.id == "main-ntg") continue;
+                    if (item.id == "page") continue;
+                    if (item.id == "area-game") continue;
+                    item.style.display = "none";
+                }
+                var p1 = document1.getElementsByTagName("p").Cast<mshtml.HTMLParaElement>();
+                foreach (mshtml.HTMLParaElement item in p1)
+                {
+                    item.style.display = "none";
+                }
 
-                div1.style.visibility = "hidden";
-                div2.style.visibility = "hidden";
-                div3.style.visibility = "hidden";
-                div4.style.visibility = "hidden";
-                div6.style.visibility = "hidden";
-                div7.style.visibility = "hidden";
+                var frame = document1.getElementById("game_frame") as mshtml.HTMLFrameElement;
+                if (frame == null) return;
 
-                StringBuilder css = new StringBuilder();
-                //*******************************************************************
-                css.Append(".naviapp");
-                css.Append("{");
-                css.Append("    visibility: hidden;");
-                css.Append("}");
-                //*******************************************************************
-                css.Append("body");
-                css.Append("{");
-                css.Append("    overflow: hidden;");
-                css.Append("}");
-                ////*******************************************************************
-                css.Append("iframe");
-                css.Append("{");
-                css.Append("    position: fixed;");
-                css.Append("    top: 0px;");
-                css.Append("    z-index: 1;");
-                css.Append("}");
-                //*******************************************************************
-                var target = (mshtml.HTMLDocument)div5.document;
-                target.createStyleSheet().cssText = css.ToString();
+                var document2 = this.ConvertToDocument(frame);
+                if (document2 == null) return;
+
+                var body2 = document2.getElementsByTagName("body").item(0) as mshtml.HTMLBody;
+                body2.style.backgroundColor = "black";
+
+                var div2 = document2.getElementsByTagName("div").Cast<mshtml.HTMLParaElement>();
+                foreach (mshtml.HTMLParaElement item in div2)
+                {
+                    this.SetDefaultElementStyle(item);
+                    if (item.id == "flashWrap") continue;
+                    item.style.display = "none";
+                }
+                var p2 = document2.getElementsByTagName("p").Cast<mshtml.HTMLParaElement>();
+                foreach (mshtml.HTMLParaElement item in p2)
+                {
+                    item.style.display = "none";
+                }
+
+                var main_ntg = div1.SingleOrDefault(x => x.id == "main-ntg");
+                if (main_ntg != null)
+                {
+                    main_ntg.style.textAlign = "left";
+                }
+
+                var flashWrap = div2.SingleOrDefault(x => x.id == "flashWrap");
+                if (flashWrap != null)
+                {
+                    flashWrap.style.textAlign = "left";
+                }
+
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Console.WriteLine(string.Format("Exception : {0}.{1} >> {2}", ex.TargetSite.ReflectedType.FullName, ex.TargetSite.Name, ex.Message));
             }
         }
 
-        #endregion
-
-        #region frameReSize
-
-        private void frameReSize(int width, int height)
+        private mshtml.HTMLDocument ConvertToDocument(mshtml.HTMLFrameElement frame)
         {
             try
             {
-                var document = (mshtml.HTMLDocument)this.Document.DomDocument;
-                if (document == null) { return; }
+                if (frame == null) return null;
 
-                //**************************************************************
-                // game_frame
-                //**************************************************************
-                var div1 = document.getElementById("game_frame"); if (div1 == null) { return; }
-                if (width > 800)
-                {
-                    int x = (width - 800);
-                    div1.style.left = string.Format("-{0}px", x);
-                    div1.style.width = string.Format("{0}px", width + x);
-                    div1.style.height = string.Format("{0}px", height);
-                }
-                else
-                {
-                    div1.style.left = string.Format("{0}px", 0);
-                    div1.style.width = string.Format("{0}px", width);
-                    div1.style.height = string.Format("{0}px", height);
-                }
+                var window = frame.contentWindow as mshtml.HTMLWindow2;
+                if (window == null) return null;
 
-                //**************************************************************
-                // flash_object
-                //**************************************************************
-                var div2 = this.getElementById<mshtml.HTMLEmbed>("externalswf"); if (div2 == null) return;
-                div2.style.width = string.Format("{0}px", width);
-                div2.style.height = string.Format("{0}px", height);
+                var provider = window as IServiceProvider;
+                if (provider == null) return null;
 
+                var guidService = typeof(SHDocVw.IWebBrowserApp).GUID;
+                var riid = typeof(SHDocVw.IWebBrowser2).GUID;
+                object ppvObject;
+                provider.QueryService(guidService, riid, out ppvObject);
+
+                var webBrowser = ppvObject as SHDocVw.IWebBrowser2;
+                if (webBrowser == null) return null;
+
+                return webBrowser.Document as mshtml.HTMLDocument;
             }
             catch (Exception)
             {
+                return null;
             }
         }
 
-        #endregion
+        private void frameReSize()
+        {
+            try
+            {
+                if (this.Document == null) return;
 
-        #region Start
+                var document1 = this.Document.DomDocument as mshtml.HTMLDocument;
+                if (document1 == null) return;
+
+                var frame = document1.getElementById("game_frame") as mshtml.HTMLFrameElement;
+                if (frame == null) return;
+
+                var document2 = this.ConvertToDocument(frame);
+                if (document2 == null) return;
+
+                var embed = document2.getElementsByTagName("EMBED").item(0) as mshtml.HTMLEmbed;
+                if (embed == null) return;
+
+                var resize = true; if (resize)
+                {
+                    frame.style.height = string.Format("{0}px", this.Height);
+                    frame.style.width = string.Format("{0}px", this.Width);
+                    embed.style.height = string.Format("{0}px", this.Height);
+                    embed.style.width = string.Format("{0}px", this.Width);
+                }
+                else
+                {
+                    frame.style.height = string.Format("{0}px", 480);
+                    frame.style.width = string.Format("{0}px", 800);
+                    embed.style.height = string.Format("{0}px", 480);
+                    embed.style.width = string.Format("{0}px", 800);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(string.Format("Exception : {0}.{1} >> {2}", ex.TargetSite.ReflectedType.FullName, ex.TargetSite.Name, ex.Message));
+            }
+        }
 
         public void Start()
         {
@@ -227,45 +228,41 @@ namespace Spinpreach.ITowerViewer
             }
         }
 
-        #endregion
-
-        #region ScreenShot
-
         public void ScreenShot(string Path)
         {
-
             try
             {
+                var document1 = this.Document.DomDocument as mshtml.HTMLDocument;
+                if (document1 == null) return;
 
-                var swf = this.getElementById<mshtml.HTMLEmbed>("externalswf"); if (swf == null) return;
+                var frame = document1.getElementById("game_frame") as mshtml.HTMLFrameElement;
+                if (frame == null) return;
 
-                int width = int.Parse(swf.width);
-                int height = int.Parse(swf.height);
+                var document2 = this.ConvertToDocument(frame);
+                if (document2 == null) return;
 
+                var embed = document2.getElementsByTagName("EMBED").item(0) as mshtml.HTMLEmbed;
+                if (embed == null) return;
+
+                var width = int.Parse(embed.width);
+                var height = int.Parse(embed.height);
                 var image = new Bitmap(width, height, PixelFormat.Format24bppRgb);
                 var rect = new RECT { left = 0, top = 0, width = width, height = height, };
                 var tdevice = new DVTARGETDEVICE { tdSize = 0, };
-
                 using (var graphics = Graphics.FromImage(image))
                 {
                     var hdc = graphics.GetHdc();
-                    IViewObject viewObject = swf as IViewObject;
+                    IViewObject viewObject = embed as IViewObject;
                     viewObject.Draw(1, 0, IntPtr.Zero, tdevice, IntPtr.Zero, hdc, rect, null, IntPtr.Zero, IntPtr.Zero);
                     graphics.ReleaseHdc(hdc);
                 }
-
                 image.Save(Path, ImageFormat.Png);
-
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Console.WriteLine(string.Format("Exception : {0}.{1} >> {2}", ex.TargetSite.ReflectedType.FullName, ex.TargetSite.Name, ex.Message));
             }
-
         }
-
-        #endregion
-
-        #region IsMute
 
         public bool? IsMute()
         {
@@ -273,17 +270,11 @@ namespace Spinpreach.ITowerViewer
             return this.audio.IsMute();
         }
 
-        #endregion
-
-        #region ToggleMute
-
         public void ToggleMute()
         {
             if (this.audio == null) { return; }
             this.audio.ToggleMute();
         }
-
-        #endregion
 
         #endregion
 
